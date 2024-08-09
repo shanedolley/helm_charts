@@ -1,0 +1,88 @@
+# File: templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.webUIPort }}
+        - containerPort: {{ .Values.service.serverPort }}
+        env:
+        {{- range .Values.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        volumeMounts:
+        - name: server
+          mountPath: /app/server
+        - name: configs
+          mountPath: /app/configs
+        - name: logs
+          mountPath: /app/logs
+        - name: media
+          mountPath: /media
+        - name: transcode-cache
+          mountPath: /temp
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      - name: {{ .Chart.Name }}-node
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        {{- range .Values.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        - name: nodeID
+          value: "MyInternalNode"
+        - name: nodeIP
+          value: "0.0.0.0"
+        - name: nodePort
+          value: "8267"
+        - name: serverIP
+          value: "localhost"
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 10 && /usr/local/bin/node /app/main.js"]
+        volumeMounts:
+        - name: server
+          mountPath: /app/server
+        - name: configs
+          mountPath: /app/configs
+        - name: logs
+          mountPath: /app/logs
+        - name: media
+          mountPath: /media
+        - name: transcode-cache
+          mountPath: /temp
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - name: server
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-server
+      - name: configs
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-configs
+      - name: logs
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-logs
+      - name: media
+        hostPath:
+          path: {{ .Values.persistence.media.existingPath }}
+          type: Directory
+      - name: transcode-cache
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-transcode-cache

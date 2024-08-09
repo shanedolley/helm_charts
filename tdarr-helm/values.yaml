@@ -1,0 +1,61 @@
+# File: values.yaml
+image:
+  repository: ghcr.io/haveagitgat/tdarr
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  webUIPort: 18004
+  serverPort: 8266
+
+persistence:
+  server:
+    enabled: true
+    size: 10Gi
+    path: /docker/tdarr/server
+  configs:
+    enabled: true
+    size: 1Gi
+    path: /docker/tdarr/configs
+  logs:
+    enabled: true
+    size: 1Gi
+    path: /docker/tdarr/logs
+  media:
+    enabled: true
+    existingPath: /media/media
+  transcodeCache:
+    enabled: true
+    size: 50Gi
+    path: /transcode_cache
+
+env:
+  - name: serverIP
+    value: "0.0.0.0"
+  - name: serverPort
+    value: "8266"
+  - name: webUIPort
+    value: "18004"
+  - name: internalNode
+    value: "true"
+  - name: inContainer
+    value: "true"
+  - name: ffmpegVersion
+    value: "6"
+  - name: nodeName
+    value: "MyInternalNode"
+  - name: TZ
+    value: "Europe/London"
+  - name: PUID
+    value: "3600"
+  - name: PGID
+    value: "3500"
+  - name: NVIDIA_DRIVER_CAPABILITIES
+    value: "all"
+  - name: NVIDIA_VISIBLE_DEVICES
+    value: "all"
+
+resources:
+  limits:
+    nvidia.com/gpu: 1

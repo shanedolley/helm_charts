@@ -1,0 +1,16 @@
+# File: templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.webUIPort }}
+      targetPort: {{ .Values.service.webUIPort }}
+      name: webui
+    - port: {{ .Values.service.serverPort }}
+      targetPort: {{ .Values.service.serverPort }}
+      name: server
+  selector:
+    app: {{ .Release.Name }}

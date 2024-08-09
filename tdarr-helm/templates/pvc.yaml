@@ -1,0 +1,17 @@
+# File: templates/pvc.yaml
+{{- range $key, $value := .Values.persistence }}
+{{- if and $value.enabled (ne $key "media") }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $.Release.Name }}-{{ $key }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $value.size }}
+  storageClassName: openebs-zfspv
+{{- end }}
+{{- end }}

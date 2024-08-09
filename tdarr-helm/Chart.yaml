@@ -1,0 +1,6 @@
+# File: Chart.yaml
+apiVersion: v2
+name: tdarr
+description: A Helm chart for Tdarr on TrueNAS SCALE
+version: 0.1.3
+appVersion: "1.0"
